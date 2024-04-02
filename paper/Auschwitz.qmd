@@ -1,0 +1,134 @@
+---
+title: "Demographics of Auschwitz Victims"
+author: 
+  - Yiyi Yao
+thanks: "Code and data are available at: https://github.com/Yaoee111/Auschwitz-victims. App available at: https://t8to5o-yiyi-yao.shinyapps.io/auschwitz/."
+date: "31 March 2024"
+date-format: long
+abstract: "This essay presents an analysis of the demographics of individuals who were victims at the Auschwitz concentration camp during the Holocaust, focusing specifically on their nationality and religious backgrounds. Utilizing a dataset of death certificates from 1942-1943, we employ R and the Shiny framework to create interactive visualizations that highlight the diversity of the victims' origins. Through this analysis, we aim to provide a deeper understanding of the scope of the tragedy that befell these individuals and discuss the implications of our findings in the context of historical memory and education."
+format: pdf
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(ggplot2)
+library(DT)
+library(shiny)
+library(dplyr)
+library(stringi)
+library(stringr)
+library(knitr)
+```
+
+
+# Introduction
+The Holocaust remains one of the darkest chapters in human history, with Auschwitz symbolizing the zenith of human cruelty. This study aims to shed light on the ethnic and religious diversity of Auschwitz's victims, thereby contributing to a more nuanced understanding of the Holocaust's impact across different communities. By analyzing death certificates from Auschwitz dated 1942-1943, we explore the demographics of the victims, focusing on their nationalities and religious affiliations.
+
+We use the statistical programming language `R` [@citeR]. In the data analysis and visualization process, we also made use of the following `R` packages: `knitr` [@citeknitr], `ggplot2` [@citeggplot2], `stringr` [@citestringr], `dplyr` [@citedplyr], `DT` [@citedt], `shiny` [@citeshiny], `stringi` [@citestringi].
+
+# Data
+The dataset comprises records from Auschwitz Death Certificates for the years 1942-1943, detailing victims' last and first names, dates of birth and death, birthplaces, residences, and religions. The dataset is instrumental in understanding the diversity of Auschwitz's victims.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+data <- read.csv("/cloud/project/data/Auschwitz_Death_Certificates_1942-1943 - Auschwitz.csv")
+```
+
+
+# Graph and Table
+To visualize the data, we create bar graphs and tables showing the number of victims by religion and nationality. 
+
+## By Religion
+@tbl-1 shows the number of deaths by religions and @fig-1 is a bar chart showing number of Auschwitz victims by religion.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| label: "tbl-1"
+#| tbl-cap: Number of Deaths by Religion
+
+# Summarize the data to count the number of deaths by religion
+deaths_by_religion <- data %>%
+  group_by(Religion) %>%
+  summarise(Deaths = n()) %>%
+  arrange(-Deaths) # Arrange in descending order of deaths
+
+kable(deaths_by_religion, align = 'l')
+```
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 18
+#| label: "fig-1"
+#| fig-cap: Number of Auschwitz Victims by Religion 
+
+# Bar Graph
+ggplot(data, aes(x = Religion, fill = Religion)) +
+  geom_bar() +
+  theme_minimal() +
+  labs(x = "Religion", y = "Count")
+```
+
+## By Nationality
+@tbl-2 is a table of number of people murdered by nationality. @fig-2 shows only the top 20 nationalities of Holocaust victims by number for better observation.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| label: "tbl-2"
+#| tbl-cap: Top 20 Number of People Murdered by Nationality (Residence)
+
+# Summarize the data to count the number of deaths by residence
+deaths_by_residence_top_20 <- data %>%
+  group_by(Residence) %>%
+  summarise(Deaths = n()) %>%
+  arrange(-Deaths) %>%
+  top_n(20, Deaths)
+
+kable(deaths_by_residence_top_20, align = 'l')
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 10
+#| label: "fig-2"
+#| fig-cap: Top 20 Nationalities of Holocaust Victims by Number
+
+# Group by 'Residence', count the number of victims, and select the top 20
+victims_by_nationality_top20 <- data %>%
+  group_by(Residence) %>%
+  summarise(NumberOfVictims = n()) %>%
+  arrange(desc(NumberOfVictims)) %>%
+  top_n(20, NumberOfVictims)
+
+# Create a bar plot for the top 20 nationalities (residences)
+ggplot(victims_by_nationality_top20, aes(x = reorder(Residence, -NumberOfVictims), y = NumberOfVictims, fill = Residence)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
+  labs(x = "Nationality (Residence)", y = "Number of Victims")
+```
+
+
+# Discussion
+The interactive visualizations reveal significant insights into the victims' demographics, illustrating the widespread impact of the Holocaust across various communities. The predominance of certain groups among the victims underlines targeted persecution, while the diversity speaks to the broad sweep of the Nazi regime's terror. This analysis not only contributes to our historical understanding but also serves as a reminder of the consequences of hatred and bigotry.
+
+Through the lens of data analysis and interactive visualization, this study emphasizes the importance of remembering all victims of the Holocaust and understanding the scale and diversity of the tragedy. The Shiny app developed as part of this project not only facilitates engagement with the historical data but also serves as a tool for education and remembrance. As we reflect on the past, it is crucial to apply the lessons learned to fight discrimination and intolerance in the present and future.
+
+
+# References
